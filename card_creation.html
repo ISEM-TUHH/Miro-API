@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Card Creation &#8212; Miro-API Playground  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Access Token Generation" href="access_token_generation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-card_creation">
+<span id="card-creation"></span><h1>Card Creation<a class="headerlink" href="#module-card_creation" title="Link to this heading">¶</a></h1>
+<p>This script interacts with the Miro API to retrieve and create items on a Miro board.</p>
+<p>It includes functionality to:
+- Load environment variables for API access.
+- Retrieve items from a Miro board using cursor pagination and store them in a pandas DataFrame.
+- Create various elements (cards, sticky notes, shapes) on the Miro board with specified attributes.
+- Find an appropriate position for new elements on the board, avoiding collisions with existing items.
+- Validate color formats and send API requests to create elements.</p>
+<p>Dependencies:
+- dotenv
+- pandas
+- requests
+- numpy
+- re</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.adjust_card_height">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">adjust_card_height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.adjust_card_height" title="Link to this definition">¶</a></dt>
+<dd><p>Adjusts the card height based on the title length and line breaks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>title</strong> (<em>str</em>) – The title of the card.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – The initial height of the card.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The adjusted height of the card.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.build_payload">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">build_payload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">board_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillColor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.build_payload" title="Link to this definition">¶</a></dt>
+<dd><p>Builds the URL and payload based on the element type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element_type</strong> (<em>str</em>) – The type of element to create (card, sticky_note, or shape).</p></li>
+<li><p><strong>board_id</strong> (<em>str</em>) – The ID of the board where the element will be created.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – The title of the element.</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – The description of the element (only applicable for cards).</p></li>
+<li><p><strong>fillColor</strong> (<em>str</em>) – The fill color of the element.</p></li>
+<li><p><strong>shape</strong> (<em>str</em>) – The shape of the element (only applicable for shapes).</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – The width of the element.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – The height of the element.</p></li>
+<li><p><strong>x</strong> (<em>int</em>) – The x-coordinate of the element’s position.</p></li>
+<li><p><strong>y</strong> (<em>int</em>) – The y-coordinate of the element’s position.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the URL and payload for the API request.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.create_miro_element">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">create_miro_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'card'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">board_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Titel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fillColor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'red'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rectangle'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.create_miro_element" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new Miro element (card, sticky note, or shape) at a specified position on a board.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element_type</strong> (<em>str</em>) – The type of element to create (card, sticky_note, or shape).</p></li>
+<li><p><strong>board_id</strong> (<em>str</em>) – The ID of the board where the element will be created.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – The title of the element.</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – The description of the element (only applicable for cards).</p></li>
+<li><p><strong>fillColor</strong> (<em>str</em>) – The fill color of the element.</p></li>
+<li><p><strong>shape</strong> (<em>str</em>) – The shape of the element (only applicable for shapes).</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – The width of the element.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – The height of the element.</p></li>
+<li><p><strong>x</strong> (<em>int</em>) – The x-coordinate of the element’s position.</p></li>
+<li><p><strong>y</strong> (<em>int</em>) – The y-coordinate of the element’s position.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The JSON response from the API if the request was successful, None otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Dict[str, object]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.find_free_position">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">find_free_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">existing_items</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">increase_step_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.find_free_position" title="Link to this definition">¶</a></dt>
+<dd><p>Finds a free position for an element on a board using a spiral search algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>int</em>) – The initial x-coordinate of the element.</p></li>
+<li><p><strong>y</strong> (<em>int</em>) – The initial y-coordinate of the element.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – The width of the element.</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – The height of the element.</p></li>
+<li><p><strong>existing_items</strong> (<em>list</em>) – A list of existing items on the board.</p></li>
+<li><p><strong>initial_step</strong> (<em>int</em><em>, </em><em>optional</em>) – The initial step size for the spiral search. Defaults to 50.</p></li>
+<li><p><strong>max_attempts</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of attempts to find a free position. Defaults to 10000.</p></li>
+<li><p><strong>increase_step_interval</strong> (<em>int</em><em>, </em><em>optional</em>) – The interval at which to increase the step size. Defaults to 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the x and y coordinates of the free position.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.get_items">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">get_items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">board_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.get_items" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieves items from a Miro board using cursor pagination and saves them into a pandas DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>board_id</strong> (<em>str</em>) – The ID of the Miro board to retrieve items from.</p></li>
+<li><p><strong>limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The maximum number of results per request. Defaults to 50.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame containing the retrieved items. Each row represents an item and the columns
+are: ‘id’, ‘type’, ‘content’, ‘shape’, ‘fillColor’, ‘width’, ‘height’, ‘x’, ‘y’, ‘createdAt’, ‘modifiedAt’,
+‘createdBy’, ‘modifiedBy’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.is_collision">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">is_collision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_height</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">existing_items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.is_collision" title="Link to this definition">¶</a></dt>
+<dd><p>Checks if a new item will collide with existing items, considering a 10% clear area around the new item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_x</strong> (<em>float</em>) – The x-coordinate of the new item’s center.</p></li>
+<li><p><strong>new_y</strong> (<em>float</em>) – The y-coordinate of the new item’s center.</p></li>
+<li><p><strong>new_width</strong> (<em>float</em>) – The width of the new item.</p></li>
+<li><p><strong>new_height</strong> (<em>float</em>) – The height of the new item.</p></li>
+<li><p><strong>existing_items</strong> (<em>dict</em>) – A dictionary containing the existing items’ coordinates and dimensions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if a collision is detected, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.send_request">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">send_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">element_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.send_request" title="Link to this definition">¶</a></dt>
+<dd><p>Sends the API request to create the Miro element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> (<em>str</em>) – The API endpoint URL.</p></li>
+<li><p><strong>payload</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>object</em><em>]</em>) – The JSON payload for the request.</p></li>
+<li><p><strong>element_type</strong> (<em>str</em>) – The type of the element being created (e.g. “card”, “sticky_note”, “shape”).</p></li>
+<li><p><strong>x</strong> (<em>float</em>) – The x-coordinate of the element’s center.</p></li>
+<li><p><strong>y</strong> (<em>float</em>) – The y-coordinate of the element’s center.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The JSON response from the API if the request was successful, None otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Dict[str, object]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.validate_hex_color">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">validate_hex_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#card_creation.validate_hex_color" title="Link to this definition">¶</a></dt>
+<dd><p>Validates a given color string as a hexadecimal color code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>color</strong> (<em>str</em>) – The color string to be validated.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The validated hexadecimal color code. If the input color is invalid, returns “#00C1D4” as default.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="card_creation.validate_sticky_note_color">
+<span class="sig-prename descclassname"><span class="pre">card_creation.</span></span><span class="sig-name descname"><span class="pre">validate_sticky_note_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fillColor</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#card_creation.validate_sticky_note_color" title="Link to this definition">¶</a></dt>
+<dd><p>Validates the color for sticky notes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fillColor</strong> (<em>str</em>) – The color to be validated.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The validated color. If the input color is not in the allowed colors list, it defaults to ‘yellow’.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Miro-API Playground</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="access_token_generation.html">Access Token Generation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Card Creation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.adjust_card_height"><code class="docutils literal notranslate"><span class="pre">adjust_card_height()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.build_payload"><code class="docutils literal notranslate"><span class="pre">build_payload()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.create_miro_element"><code class="docutils literal notranslate"><span class="pre">create_miro_element()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.find_free_position"><code class="docutils literal notranslate"><span class="pre">find_free_position()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.get_items"><code class="docutils literal notranslate"><span class="pre">get_items()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.is_collision"><code class="docutils literal notranslate"><span class="pre">is_collision()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.send_request"><code class="docutils literal notranslate"><span class="pre">send_request()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.validate_hex_color"><code class="docutils literal notranslate"><span class="pre">validate_hex_color()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#card_creation.validate_sticky_note_color"><code class="docutils literal notranslate"><span class="pre">validate_sticky_note_color()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="access_token_generation.html" title="previous chapter">Access Token Generation</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Felix Förster.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/card_creation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
