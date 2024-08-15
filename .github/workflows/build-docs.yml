@@ -24,10 +24,11 @@ jobs:
     - name: Install dependencies
       run: |
         pip install sphinx
-    
+        pip install -r requirements.txt  # If you have a requirements.txt with dependencies
+
     - name: Build documentation
       run: |
-        cd docs
+        cd Documentation/source
         make html
 
     - name: Deploy to GitHub Pages
@@ -35,4 +36,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/_build/html
+        publish_dir: ./Documentation/build/html
