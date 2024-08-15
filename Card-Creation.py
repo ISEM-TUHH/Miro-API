@@ -93,24 +93,24 @@ def create_miro_element(
     x=0,
     y=0,
 ):
-	"""
-	Creates a new Miro element (card, sticky note, or shape) at a specified position on a board.
+    """
+    Creates a new Miro element (card, sticky note, or shape) at a specified position on a board.
 
-	Parameters:
-		element_type (str): The type of element to create (card, sticky_note, or shape).
-		board_id (str): The ID of the board where the element will be created.
-		title (str): The title of the element.
-		description (str): The description of the element (only applicable for cards).
-		fillColor (str): The fill color of the element.
-		shape (str): The shape of the element (only applicable for shapes).
-		width (int): The width of the element.
-		height (int): The height of the element.
-		x (int): The x-coordinate of the element's position.
-		y (int): The y-coordinate of the element's position.
+    Parameters:
+        element_type (str): The type of element to create (card, sticky_note, or shape).
+        board_id (str): The ID of the board where the element will be created.
+        title (str): The title of the element.
+        description (str): The description of the element (only applicable for cards).
+        fillColor (str): The fill color of the element.
+        shape (str): The shape of the element (only applicable for shapes).
+        width (int): The width of the element.
+        height (int): The height of the element.
+        x (int): The x-coordinate of the element's position.
+        y (int): The y-coordinate of the element's position.
 
-	Returns:
-		Optional[Dict[str, object]]: The JSON response from the API if the request was successful, None otherwise.
-	"""
+    Returns:
+        Optional[Dict[str, object]]: The JSON response from the API if the request was successful, None otherwise.
+    """
 
     if element_type == "card":
         height = adjust_card_height(title, height)
