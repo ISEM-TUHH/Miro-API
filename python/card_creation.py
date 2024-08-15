@@ -1,3 +1,22 @@
+"""
+This script interacts with the Miro API to retrieve and create items on a Miro board.
+
+It includes functionality to:
+- Load environment variables for API access.
+- Retrieve items from a Miro board using cursor pagination and store them in a pandas DataFrame.
+- Create various elements (cards, sticky notes, shapes) on the Miro board with specified attributes.
+- Find an appropriate position for new elements on the board, avoiding collisions with existing items.
+- Validate color formats and send API requests to create elements.
+
+Dependencies:
+- dotenv
+- pandas
+- requests
+- numpy
+- re
+"""
+
+
 from dotenv import load_dotenv
 import pandas as pd
 import requests
