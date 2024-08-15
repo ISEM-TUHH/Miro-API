@@ -30,6 +30,7 @@ jobs:
       run: |
         cd Documentation
         make html
+        
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main'  # Only deploy from the main branch
